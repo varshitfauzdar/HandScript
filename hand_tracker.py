@@ -2,32 +2,37 @@ import cv2
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-import numpy as np
+import time
 
 class HandTracker:
     def __init__(self):
-        self.mp_hands = mp.tasks.vision.HandLandmarker
-        self.base_options = python.BaseOptions(
-            model_asset_path= "C:/Users/varsh/OneDrive/Desktop/ai/HandScript/hand_landmarker.task"  # will use default bundled model
+        base_options = python.BaseOptions(
+            model_asset_path="hand_landmarker.task"
         )
-        self.options = vision.HandLandmarkerOptions(
-            base_options=self.base_options,
+
+        options = vision.HandLandmarkerOptions(
+            base_options=base_options,
+            running_mode=vision.RunningMode.VIDEO,
             num_hands=1
         )
-        self.detector = vision.HandLandmarker.create_from_options(self.options)
+
+        self.detector = vision.HandLandmarker.create_from_options(options)
 
     def get_landmarks(self, frame):
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
 
-        result = self.detector.detect(mp_image)
+        timestamp = int(time.time() * 1000)
+        result = self.detector.detect_for_video(mp_image, timestamp)
 
         landmarks = []
+
         if result.hand_landmarks:
             h, w, _ = frame.shape
-            for hand_landmarks in result.hand_landmarks:
-                for idx, lm in enumerate(hand_landmarks):
-                    cx, cy = int(lm.x * w), int(lm.y * h)
-                    landmarks.append((idx, cx, cy))
+            hand_landmarks = result.hand_landmarks[0]
+
+            for idx, lm in enumerate(hand_landmarks):
+                cx, cy = int(lm.x * w), int(lm.y * h)
+                landmarks.append((idx, cx, cy))
 
         return landmarks
