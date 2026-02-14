@@ -1,12 +1,13 @@
 import cv2
 import numpy as np
+from collections import deque
 
 class Whiteboard:
     def __init__(self):
         self.canvas = None
-        self.prev_x, self.prev_y = 0, 0
         self.color = (255, 0, 255)
         self.brush_thickness = 8
+        self.points = deque(maxlen=5)
 
     def initialize(self, frame):
         if self.canvas is None:
@@ -14,15 +15,17 @@ class Whiteboard:
 
     def draw(self, frame, x, y, drawing_mode):
         if drawing_mode:
-            if self.prev_x == 0 and self.prev_y == 0:
-                self.prev_x, self.prev_y = x, y
+            self.points.append((x, y))
 
-            cv2.line(self.canvas, (self.prev_x, self.prev_y),
-                     (x, y), self.color, self.brush_thickness)
-
-            self.prev_x, self.prev_y = x, y
+            if len(self.points) > 1:
+                for i in range(1, len(self.points)):
+                    cv2.line(self.canvas,
+                             self.points[i - 1],
+                             self.points[i],
+                             self.color,
+                             self.brush_thickness)
         else:
-            self.prev_x, self.prev_y = 0, 0
+            self.points.clear()
 
     def merge(self, frame):
         gray = cv2.cvtColor(self.canvas, cv2.COLOR_BGR2GRAY)

@@ -2,6 +2,19 @@ import cv2
 from hand_tracker import HandTracker
 from whiteboard import Whiteboard
 from utils import fingers_up
+import pickle
+
+model = pickle.load(open("gesture_model.pkl", "rb"))
+
+gesture = model.predict([finger_state])[0]
+
+if gesture == "draw":
+    board.draw(frame, index_x, index_y, True)
+elif gesture == "erase":
+    board.color = (0,0,0)
+elif gesture == "clear":
+    board.canvas = np.zeros_like(frame)
+
 
 cap = cv2.VideoCapture(0)
 tracker = HandTracker()
