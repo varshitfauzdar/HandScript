@@ -6,12 +6,15 @@ class Whiteboard:
     def __init__(self):
         self.canvas = None
         self.points = deque(maxlen=5)
-        self.color = (255, 0, 255)
+        self.color = (255, 0, 255)  # Default purple
         self.thickness = 6
 
     def initialize(self, frame):
         if self.canvas is None:
             self.canvas = np.zeros_like(frame)
+
+    def set_color(self, color):
+        self.color = color
 
     def draw(self, frame, x, y, mode):
         if mode == "draw":
@@ -32,7 +35,7 @@ class Whiteboard:
 
     def clear(self):
         if self.canvas is not None:
-            self.canvas[:] = 0  # reset but keep same shape
+            self.canvas[:] = 0
 
     def merge(self, frame):
         if self.canvas is None:
